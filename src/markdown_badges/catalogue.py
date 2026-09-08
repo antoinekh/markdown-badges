@@ -144,11 +144,13 @@ CATALOGUE: tuple[Badge, ...] = (
         BadgeType.BRANDING,
         "Docker blue, white whale.",
     ),
+    # AWS has no icon: simple-icons carries no Amazon marks (only a wordmark "aws"),
+    # and the badge text already renders AWS, so a wordmark would read "aws aws".
     Badge(
         "aws",
         "#232f3e",
         BadgeType.BRANDING,
-        "AWS squid ink. No mark: see the note below.",
+        "AWS squid ink. No mark.",
     ),
 )
 
