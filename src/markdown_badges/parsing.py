@@ -6,17 +6,21 @@ from collections.abc import Mapping, Sequence
 
 from markdown import Markdown
 from markdown.inlinepatterns import InlineProcessor
+from markdown.treeprocessors import Treeprocessor
 
 from markdown_badges.catalogue import Badge, BadgeType, catalogue_for
-from markdown_badges.styling import badge_element
+from markdown_badges.styling import badge_element, badge_html
 
 __all__ = [
     "INLINE_PRIORITY",
+    "TREE_PRIORITY",
     "BadgeInlineProcessor",
+    "ShorthandTreeprocessor",
     "badges_in",
     "inline_re",
     "priority_of",
     "rank_of",
+    "shorthand_re",
 ]
 
 # Below Python-Markdown's `escape` (180), so `\!high` stays literal, and below
@@ -84,3 +88,45 @@ class BadgeInlineProcessor(InlineProcessor):
         self, m: re.Match[str], data: str
     ) -> tuple[etree.Element, int, int]:
         return badge_element(self.badges[m.group(1)]), m.start(0), m.end(0)
+
+
+# Above pymdownx.tasklist (25), so the marker is read from pristine
+# `[ ] <marker> text` before tasklist turns it into a checkbox.
+TREE_PRIORITY = 26
+
+
+def shorthand_re(markers: Sequence[str]) -> re.Pattern[str]:
+    """Checkbox prefix, one configured marker, then required whitespace.
+
+    Markers are matched longest-first, so `!!` wins over `!`."""
+    alts = "|".join(re.escape(m) for m in sorted(markers, key=len, reverse=True))
+    return re.compile(
+        rf"^(?P<checkbox> *\[(?:x|X| )\] +)(?P<marker>{alts})\s+(?P<rest>.*)", re.DOTALL
+    )
+
+
+class ShorthandTreeprocessor(Treeprocessor):
+    """Rewrite a task-list item whose text starts with a configured marker."""
+
+    def __init__(self, md: Markdown, markers: Mapping[str, Badge]) -> None:
+        super().__init__(md)
+        self.markers = markers
+        self.pattern = shorthand_re(list(markers))
+
+    def _rewrite(self, holder: etree.Element) -> bool:
+        m = self.pattern.match(holder.text or "")
+        if m is None:
+            return False
+        badge = self.md.htmlStash.store(badge_html(self.markers[m.group("marker")]))
+        holder.text = m.group("checkbox") + badge + m.group("rest")
+        return True
+
+    def run(self, root: etree.Element) -> None:
+        for li in root.iter("li"):
+            if self._rewrite(li):
+                continue
+            # Loose lists wrap the checkbox text in a child <p>.
+            if len(li):
+                first = next(iter(li))
+                if first.tag == "p":
+                    self._rewrite(first)

@@ -64,8 +64,13 @@ def test_scanning_respects_word_boundaries():
 
 
 def test_longer_names_are_not_shadowed():
-    # `blocked` (status) and `blocker` (priority) share a prefix.
-    assert [b.name for b in badges_in("!blocked !blocker")] == ["blocked", "blocker"]
+    # `p` is a strict prefix of `p1`: alternation order must try `p1` first,
+    # or `!p1` would match `p` and leave a stray `1` behind.
+    badges = {
+        "p": Badge("p", "#111", BadgeType.PRIORITY),
+        "p1": Badge("p1", "#222", BadgeType.PRIORITY),
+    }
+    assert [b.name for b in badges_in("!p1", badges)] == ["p1"]
 
 
 def test_scanning_is_a_raw_scan_not_a_markdown_parse():
