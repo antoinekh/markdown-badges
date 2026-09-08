@@ -94,6 +94,22 @@ glow = "#111;box-shadow:0 0 0 2px #ff1744,0 0 10px #ff1744"
 
 The contrast calculation reads the leading color, up to the first `;`, so the badge text stays legible against the base you picked.
 
+#### Example: a logo badge
+
+A level does not have to mean a priority. Inline a single-path logo as a `data:` URI and you get a brand badge that costs no network request, usable as `!gitlab` anywhere a level keyword works. Pick a base dark enough that the auto-contrast picks white, so the badge text matches a white logo:
+
+```toml
+[project.markdown_extensions.markdown_priority_badges.levels]
+gitlab = "#7759c2;background-image:url('data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27%23fff%27%3E%3Cpath%20d%3D%27M23.955%2013.587l-1.342-4.135-2.664-8.189a.455.455%200%2000-.867%200L16.418%209.45H7.582L4.919%201.263a.455.455%200%2000-.867%200L1.386%209.45.044%2013.587a.924.924%200%2000.331%201.03L12%2023.054l11.625-8.436a.92.92%200%2000.33-1.031%27%2F%3E%3C%2Fsvg%3E');background-repeat:no-repeat;background-position:0.45em center;background-size:0.8em;padding-left:1.75em"
+```
+
+```markdown
+- [ ] !gitlab Rebase the config-models MR before the release
+- [ ] !gitlab !high Pipeline red on `main` since yesterday
+```
+
+To build your own: take the logo as a single-path SVG, set `fill='#fff'`, URL-encode it (`#` becomes `%23`, spaces become `%20`), and pair the `background-image` with `background-repeat`, `background-position`, `background-size`, and the `padding-left` that makes room for it.
+
 > [!NOTE]
 > The value is not parsed or filtered. It joins the badge's declaration list verbatim, exactly like an `extra_css` rule you write yourself, and the `levels` map is your own site config. Only the value's type is checked: a non-string or empty value raises a `ValueError` when the extension loads.
 

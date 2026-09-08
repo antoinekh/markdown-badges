@@ -11,6 +11,7 @@
 ### Added
 
 - **Extended level values.** A `levels` value becomes the badge's `background-color`, and anything after a `;` becomes a further declaration on that badge. A level can now carry a background image, a gradient, or a shadow straight from config, with no site CSS. This behaviour existed before but was undocumented and unsupported; it is now a documented feature with tests. The value is not parsed or filtered, exactly like an `extra_css` rule.
+- README example of a logo badge (`!gitlab`), showing a single-path SVG inlined as a `data:` URI so the page makes no network request for it.
 - `__all__`, plus the `TREE_PRIORITY` and `INLINE_PRIORITY` constants that document why each processor is registered where it is.
 - Colors accept 4- and 8-digit hex (`#eeef`, `#eeeeeeff`); the alpha channel is dropped before the contrast calculation.
 - A `levels` value is rejected with a `ValueError` when the extension loads if it is not a string, or is empty. Those cannot produce CSS at all, so they are config mistakes rather than intent.
