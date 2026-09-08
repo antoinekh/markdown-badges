@@ -1,6 +1,6 @@
 """Unit tests for the reusable priority-parsing API."""
 
-from markdown_priority_badges import LEVELS, level_rank, priority_of
+from markdown_badges import LEVELS, level_rank, priority_of
 
 
 def test_levels_are_ascending_builtins():

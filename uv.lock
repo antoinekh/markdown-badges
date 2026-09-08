@@ -240,8 +240,8 @@ wheels = [
 ]
 
 [[package]]
-name = "markdown-priority-badges"
-version = "0.2.0"
+name = "markdown-badges"
+version = "1.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "markdown" },

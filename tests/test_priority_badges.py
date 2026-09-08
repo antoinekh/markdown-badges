@@ -3,7 +3,7 @@
 import markdown
 import pytest
 
-from markdown_priority_badges import PriorityBadgesExtension
+from markdown_badges import PriorityBadgesExtension
 
 
 def render(text: str, **cfg: object) -> str:
