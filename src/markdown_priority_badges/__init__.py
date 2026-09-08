@@ -15,6 +15,11 @@ over the built-ins). The badge carries its own inline styles, so the extension
 is self-contained: no external stylesheet is needed. Badge text color (black
 or white) is chosen automatically for legibility against each background.
 
+A level value is written into the badge's ``style`` attribute as its
+``background-color``, so it may carry further CSS declarations after a ``;``
+to give one level an icon, a gradient, or a shadow. The contrast calculation
+reads the leading color, before the first ``;``.
+
 A keyword is left literal when it is escaped (``\\!high``) or written inside a
 code span, because the inline processor is registered below Python-Markdown's
 own ``escape`` and ``backtick`` patterns.
@@ -113,8 +118,9 @@ _NAMED_COLORS = {
 def _to_hex6(color: str) -> str | None:
     """Normalize a CSS color to six hex digits, or None if it cannot be
     resolved. Accepts 3-/4-/6-/8-digit hex (any alpha channel is dropped) and
-    the common named colors above."""
-    c = color.strip().lower()
+    the common named colors above. A value carrying extra CSS declarations is
+    read up to the first `;`, which is its `background-color`."""
+    c = color.split(";", 1)[0].strip().lower()
     c = _NAMED_COLORS.get(c, c)
     if not c.startswith("#"):
         return None
@@ -130,8 +136,8 @@ def _to_hex6(color: str) -> str | None:
 
 def _text_color(bg: str) -> str:
     """Black or white, whichever has the higher WCAG contrast against `bg`.
-    `bg` may be 3-/4-/6-/8-digit hex or a common named color; anything else
-    falls back to white."""
+    `bg` may be 3-/4-/6-/8-digit hex, a common named color, or any of those
+    followed by extra CSS declarations; anything else falls back to white."""
     hex6 = _to_hex6(bg)
     if hex6 is None:
         return "#fff"
@@ -184,7 +190,10 @@ def priority_of(text: str, levels: Iterable[str] = LEVELS) -> str | None:
 
 
 def _badge_element(level: str, color: str) -> etree.Element:
-    """A styled inline badge <span> for `level` on background `color`."""
+    """A styled inline badge <span> for `level` on background `color`.
+
+    `color` joins the declaration list verbatim, so a value such as
+    `#b71c1c;background-image:url(...)` adds declarations to the badge."""
     el = etree.Element("span")
     el.set("class", f"task-prio task-prio--{level}")
     el.set("style", f"{_BADGE_STYLE}background-color:{color};color:{_text_color(color)};")
@@ -249,26 +258,18 @@ def _inline_re(names: Sequence[str]) -> str:
     return rf"(?<![\w!])!({alts})\b"
 
 
-# Constructs that would let a `levels` color escape its CSS declaration or
-# pull in a remote resource: `;` ends the declaration, `{`/`}` and `/*` break
-# the surrounding syntax, and `url(` fetches from the network.
-_UNSAFE_COLOR_RE = re.compile(r"[;{}]|/\*|\burl\s*\(", re.IGNORECASE)
-
-
 def _validate_levels(levels: Mapping[str, Any]) -> None:
-    """Raise ValueError if any level color could break out of the badge's style
-    attribute. A color must be a single CSS color value. Values come from site
-    config (TOML / YAML), so their type is checked as well."""
+    """Raise ValueError for a level value that cannot produce CSS at all.
+
+    Values come from site config (TOML / YAML), so their type is checked. What
+    they contain is deliberately not restricted: a value may extend the badge's
+    declaration list past the first `;` (see `_badge_element`). The config is
+    the site owner's own file, trusted the same way an `extra_css` entry is."""
     for name, color in levels.items():
         if not isinstance(color, str):
             raise ValueError(f"priority-badges: level {name!r} has a non-string color {color!r}")
         if not color.strip():
             raise ValueError(f"priority-badges: level {name!r} has an empty color")
-        if _UNSAFE_COLOR_RE.search(color):
-            raise ValueError(
-                f"priority-badges: level {name!r} has an unsafe color {color!r}; "
-                "a color must be a single CSS color value"
-            )
 
 
 class PriorityBadgesExtension(Extension):

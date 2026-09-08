@@ -76,7 +76,26 @@ from markdown_priority_badges import PriorityBadgesExtension
 markdown.markdown(text, extensions=["pymdownx.tasklist", PriorityBadgesExtension(levels={"blocker": "#7b1fa2"})])
 ```
 
-Colors may be 3-, 4-, 6-, or 8-digit hex (`#7b1fa2`, `#eee`, `#eeeeeeff`) or a common CSS name (`red`, `yellow`, `rebeccapurple`); the badge text color auto-contrasts against them. Any alpha channel is ignored for the contrast calculation. A color must be a single CSS color value: one that could break out of the badge's `style` attribute (it contains `;`, `{`, `}`, `/*`, or `url(`) is rejected with a `ValueError` when the extension loads.
+Colors may be 3-, 4-, 6-, or 8-digit hex (`#7b1fa2`, `#eee`, `#eeeeeeff`) or a common CSS name (`red`, `yellow`, `rebeccapurple`); the badge text color auto-contrasts against them. Any alpha channel is ignored for the contrast calculation.
+
+### Extended level values
+
+A level value becomes the badge's `background-color`, so anything you add after a `;` becomes a further declaration on that badge. Use it to give one level an icon, a gradient, or a shadow, without writing any site CSS:
+
+```toml
+[project.markdown_extensions.markdown_priority_badges.levels]
+# A background image, plus the padding that makes room for it.
+icon = "#b71c1c;background-image:url('data:image/svg+xml,…');background-repeat:no-repeat;background-position:0.4em center;background-size:0.85em;padding-left:1.7em"
+# A gradient instead of a flat fill.
+gradient = "#4a148c;background-image:linear-gradient(90deg,#4a148c,#c2185b)"
+# A colored ring and halo.
+glow = "#111;box-shadow:0 0 0 2px #ff1744,0 0 10px #ff1744"
+```
+
+The contrast calculation reads the leading color, up to the first `;`, so the badge text stays legible against the base you picked.
+
+> [!NOTE]
+> The value is not parsed or filtered. It joins the badge's declaration list verbatim, exactly like an `extra_css` rule you write yourself, and the `levels` map is your own site config. Only the value's type is checked: a non-string or empty value raises a `ValueError` when the extension loads.
 
 ## Reusing the parser
 

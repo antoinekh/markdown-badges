@@ -207,19 +207,37 @@ def test_four_digit_hex_drops_the_alpha_channel():
     assert "background-color:#eeef;color:#000" in html
 
 
-@pytest.mark.parametrize(
-    "color",
-    [
-        "red;background-image:url(http://evil/x.png)",
-        "url(http://evil/x.png)",
-        "red/*x*/",
-        "red}",
-    ],
-)
-def test_unsafe_color_is_rejected(color):
-    # A color must not be able to escape the badge's style attribute.
-    with pytest.raises(ValueError, match="unsafe color"):
-        render("!low", levels={"low": color})
+# --- Extended level values (extra CSS declarations) ------------------------
+
+
+def test_level_value_can_add_declarations():
+    # A level value joins the badge's declaration list verbatim, so it can give
+    # one level a background image and the padding to make room for it.
+    html = render("!icon", levels={"icon": "#b71c1c;background-image:url(x.svg);padding-left:2em"})
+    assert "background-color:#b71c1c;background-image:url(x.svg);padding-left:2em;" in html
+
+
+def test_extended_value_contrasts_against_its_leading_color():
+    # The contrast helper reads up to the first `;`, so a light background
+    # still gets black text even when the value carries more declarations.
+    html = render("!a !b", levels={"a": "#eee;box-shadow:0 0 2px #000", "b": "#003;padding:1em"})
+    assert "background-color:#eee;box-shadow:0 0 2px #000;color:#000;" in html
+    assert "background-color:#003;padding:1em;color:#fff;" in html
+
+
+def test_extended_value_works_in_the_task_list_shorthand():
+    html = render("- [ ] !! Prod down", levels={"critical": "#900;padding-left:2em"})
+    assert "background-color:#900;padding-left:2em;color:#fff;" in html
+
+
+def test_gradient_value_is_passed_through():
+    html = render(
+        "!g", levels={"g": "#4a148c;background-image:linear-gradient(90deg,#4a148c,#c2185b)"}
+    )
+    assert "background-image:linear-gradient(90deg,#4a148c,#c2185b)" in html
+
+
+# --- Rejected values -------------------------------------------------------
 
 
 def test_empty_color_is_rejected():

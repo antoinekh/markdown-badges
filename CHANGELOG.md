@@ -10,20 +10,19 @@
 
 ### Added
 
+- **Extended level values.** A `levels` value becomes the badge's `background-color`, and anything after a `;` becomes a further declaration on that badge. A level can now carry a background image, a gradient, or a shadow straight from config, with no site CSS. This behaviour existed before but was undocumented and unsupported; it is now a documented feature with tests. The value is not parsed or filtered, exactly like an `extra_css` rule.
 - `__all__`, plus the `TREE_PRIORITY` and `INLINE_PRIORITY` constants that document why each processor is registered where it is.
 - Colors accept 4- and 8-digit hex (`#eeef`, `#eeeeeeff`); the alpha channel is dropped before the contrast calculation.
+- A `levels` value is rejected with a `ValueError` when the extension loads if it is not a string, or is empty. Those cannot produce CSS at all, so they are config mistakes rather than intent.
 - `mypy --strict` over `src`, and `ruff format --check`, both run in CI.
-- Tests for the escape hatch, nested task lists, `*` / `+` bullets, an uppercase `[X]` checkbox, an inline keyword inside a task item, alpha hex colors, and color validation.
+- Tests for the escape hatch, nested task lists, `*` / `+` bullets, an uppercase `[X]` checkbox, an inline keyword inside a task item, alpha hex colors, extended level values, and value validation.
 
 ### Changed
 
+- The text-contrast calculation reads a level value up to its first `;`, so a value carrying extra declarations now contrasts against its real background instead of silently falling back to white text.
 - The ruff lint rule set now selects `E`, `F`, `I`, `UP`, and `B`.
 - Both workflows use the same action versions (`actions/checkout@v6`, `astral-sh/setup-uv@v8.2.0`).
 - Added the per-version Python, Markdown topic, and `Typing :: Typed` classifiers, plus the `Repository` and `Issues` project URLs.
-
-### Security
-
-- A `levels` color that could break out of the badge's `style` attribute (it contains `;`, `{`, `}`, `/*`, or `url(`) is now rejected with a `ValueError` when the extension loads, instead of being written into the attribute verbatim.
 
 ## 0.2.0 - 2026-07-01
 
