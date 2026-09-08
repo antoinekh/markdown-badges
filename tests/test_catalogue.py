@@ -23,7 +23,7 @@ def test_catalogue_for_with_no_arguments_returns_everything():
 
 def test_catalogue_for_filters_by_type():
     only_branding = catalogue_for(BadgeType.BRANDING)
-    assert set(only_branding) == {"gitlab", "github", "claude"}
+    assert set(only_branding) == {"gitlab", "github", "claude", "docker", "aws"}
     assert all(b.type is BadgeType.BRANDING for b in only_branding.values())
 
 
@@ -49,7 +49,21 @@ def test_badge_is_frozen():
 
 
 def test_branding_badges_inline_their_icon():
-    for name in ("gitlab", "github", "claude"):
+    for name in ("gitlab", "github", "claude", "docker"):
         value = catalogue_for(BadgeType.BRANDING)[name].value
         assert "background-image:url('data:image/svg+xml," in value
         assert "http" not in value.split("background-image")[0]
+
+
+def test_aws_badge_is_a_plain_colour():
+    # No CC0 AWS mark exists, and the badge text already reads AWS.
+    aws = catalogue_for(BadgeType.BRANDING)["aws"]
+    assert aws.value == "#232f3e"
+    assert "background-image" not in aws.value
+
+
+def test_docker_badge_contrasts_with_its_white_mark():
+    from markdown_badges.styling import text_color
+
+    docker = catalogue_for(BadgeType.BRANDING)["docker"]
+    assert text_color(docker.value) == "#fff"
