@@ -70,6 +70,11 @@ def test_unknown_badges_type_raises():
         render("!high", badges={"nope": {"x": "#000"}})
 
 
+def test_badges_type_value_not_a_table_raises():
+    with pytest.raises(ValueError, match="not a table"):
+        render("!high", badges={"priority": ["#000"]})
+
+
 def test_shorthand_pointing_at_an_unknown_badge_raises():
     with pytest.raises(ValueError, match="not in scope"):
         render("- [ ] ! x", shorthand={"!": "nosuchbadge"})

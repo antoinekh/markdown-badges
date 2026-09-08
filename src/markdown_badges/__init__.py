@@ -71,9 +71,15 @@ def _check_value(name: str, value: Any) -> str:
     """The badge value as a string, or a ValueError. Content is not restricted:
     a value may extend the badge's declaration list past the first `;`."""
     if not isinstance(value, str):
-        raise ValueError(f"markdown-badges: badge {name!r} has a non-string value {value!r}")
+        raise ValueError(
+            f"markdown-badges: badge {name!r} has a non-string value {value!r}; "
+            "give it a CSS colour string instead, for example '#7b1fa2'"
+        )
     if not value.strip():
-        raise ValueError(f"markdown-badges: badge {name!r} has an empty value")
+        raise ValueError(
+            f"markdown-badges: badge {name!r} has an empty value; "
+            "give it a CSS colour string instead, for example '#7b1fa2'"
+        )
     return value
 
 
@@ -90,6 +96,11 @@ def resolve_badges(
 
     for type_name, entries in user_badges.items():
         badge_type = _badge_type(type_name, "badges")
+        if not isinstance(entries, Mapping):
+            raise ValueError(
+                f"markdown-badges: badges[{type_name!r}] is {entries!r}, not a table; "
+                "it must map badge name to value, for example {'blocker': '#7b1fa2'}"
+            )
         for name, raw in entries.items():
             value = _check_value(name, raw)
             position = next((i for i, b in enumerate(ordered) if b.name == name), None)
