@@ -34,6 +34,9 @@ from markdown import Extension, Markdown
 from markdown.inlinepatterns import InlineProcessor
 from markdown.treeprocessors import Treeprocessor
 
+from markdown_badges.catalogue import Badge, BadgeType
+from markdown_badges.styling import badge_element, badge_html
+
 __all__ = [
     "DEFAULT_LEVELS",
     "INLINE_PRIORITY",
@@ -78,79 +81,6 @@ TREE_PRIORITY = 26
 # keyword inside a code span survives verbatim.
 INLINE_PRIORITY = 175
 
-# Shared pill geometry; per-badge background and (auto) text color are appended.
-_BADGE_STYLE = (
-    "display:inline-block;padding:0.05em 0.45em;margin-right:0.15em;"
-    "border-radius:0.35em;font-size:0.62em;font-weight:700;line-height:1.5;"
-    "letter-spacing:0.04em;text-transform:uppercase;vertical-align:middle;"
-    "-webkit-user-select:none;user-select:none;"
-)
-
-
-# Common CSS named colors, so `levels` can use a name as well as hex and still
-# get an auto-contrasted text color. Anything not resolvable to a hex triple
-# (other named colors, rgb()/hsl(), etc.) falls back to white text.
-_NAMED_COLORS = {
-    "black": "#000000",
-    "white": "#ffffff",
-    "gray": "#808080",
-    "grey": "#808080",
-    "silver": "#c0c0c0",
-    "red": "#ff0000",
-    "maroon": "#800000",
-    "orange": "#ffa500",
-    "yellow": "#ffff00",
-    "olive": "#808000",
-    "lime": "#00ff00",
-    "green": "#008000",
-    "teal": "#008080",
-    "aqua": "#00ffff",
-    "cyan": "#00ffff",
-    "blue": "#0000ff",
-    "navy": "#000080",
-    "purple": "#800080",
-    "fuchsia": "#ff00ff",
-    "magenta": "#ff00ff",
-    "rebeccapurple": "#663399",
-}
-
-
-def _to_hex6(color: str) -> str | None:
-    """Normalize a CSS color to six hex digits, or None if it cannot be
-    resolved. Accepts 3-/4-/6-/8-digit hex (any alpha channel is dropped) and
-    the common named colors above. A value carrying extra CSS declarations is
-    read up to the first `;`, which is its `background-color`."""
-    c = color.split(";", 1)[0].strip().lower()
-    c = _NAMED_COLORS.get(c, c)
-    if not c.startswith("#"):
-        return None
-    h = c[1:]
-    if not h or not all(ch in "0123456789abcdef" for ch in h):
-        return None
-    if len(h) in (3, 4):
-        h = "".join(ch * 2 for ch in h)
-    if len(h) in (6, 8):
-        return h[:6]
-    return None
-
-
-def _text_color(bg: str) -> str:
-    """Black or white, whichever has the higher WCAG contrast against `bg`.
-    `bg` may be 3-/4-/6-/8-digit hex, a common named color, or any of those
-    followed by extra CSS declarations; anything else falls back to white."""
-    hex6 = _to_hex6(bg)
-    if hex6 is None:
-        return "#fff"
-    r, g, b = (int(hex6[i : i + 2], 16) / 255 for i in (0, 2, 4))
-
-    def lin(c: float) -> float:
-        return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
-
-    lum = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)
-    contrast_black = (lum + 0.05) / 0.05
-    contrast_white = 1.05 / (lum + 0.05)
-    return "#000" if contrast_black >= contrast_white else "#fff"
-
 
 def _shorthand_level(bangs: str) -> str:
     """One bang is 'high'; two or more collapse to 'critical'."""
@@ -189,24 +119,6 @@ def priority_of(text: str, levels: Iterable[str] = LEVELS) -> str | None:
     return max(found, key=lambda name: level_rank(name, names))
 
 
-def _badge_element(level: str, color: str) -> etree.Element:
-    """A styled inline badge <span> for `level` on background `color`.
-
-    `color` joins the declaration list verbatim, so a value such as
-    `#b71c1c;background-image:url(...)` adds declarations to the badge."""
-    el = etree.Element("span")
-    el.set("class", f"task-prio task-prio--{level}")
-    el.set("style", f"{_BADGE_STYLE}background-color:{color};color:{_text_color(color)};")
-    el.text = level
-    return el
-
-
-def _badge_html(level: str, color: str) -> str:
-    """The badge as an HTML string with a trailing space (used by the task-list
-    treeprocessor via the HTML stash)."""
-    return etree.tostring(_badge_element(level, color), encoding="unicode") + " "
-
-
 class TasklistShorthandTreeprocessor(Treeprocessor):
     """Rewrite task-list items flagged with a leading `!` run into a badge."""
 
@@ -219,7 +131,8 @@ class TasklistShorthandTreeprocessor(Treeprocessor):
         if m is None:
             return False
         level = _shorthand_level(m.group("bangs"))
-        badge = self.md.htmlStash.store(_badge_html(level, self.levels[level]))
+        html = badge_html(Badge(level, self.levels[level], BadgeType.PRIORITY))
+        badge = self.md.htmlStash.store(html)
         holder.text = m.group("checkbox") + badge + m.group("rest")
         return True
 
@@ -247,7 +160,8 @@ class PriorityInlineProcessor(InlineProcessor):
         self, m: re.Match[str], data: str
     ) -> tuple[etree.Element, int, int]:
         level = m.group(1)
-        return _badge_element(level, self.levels[level]), m.start(0), m.end(0)
+        element = badge_element(Badge(level, self.levels[level], BadgeType.PRIORITY))
+        return element, m.start(0), m.end(0)
 
 
 def _inline_re(names: Sequence[str]) -> str:
@@ -263,7 +177,7 @@ def _validate_levels(levels: Mapping[str, Any]) -> None:
 
     Values come from site config (TOML / YAML), so their type is checked. What
     they contain is deliberately not restricted: a value may extend the badge's
-    declaration list past the first `;` (see `_badge_element`). The config is
+    declaration list past the first `;` (see `styling.badge_element`). The config is
     the site owner's own file, trusted the same way an `extra_css` entry is."""
     for name, color in levels.items():
         if not isinstance(color, str):
