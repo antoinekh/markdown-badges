@@ -3,7 +3,7 @@
 [![CI](https://github.com/antoinekh/markdown-priority-badges/actions/workflows/ci.yml/badge.svg)](https://github.com/antoinekh/markdown-priority-badges/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/markdown-priority-badges)](https://pypi.org/project/markdown-priority-badges/)
 [![Python versions](https://img.shields.io/pypi/pyversions/markdown-priority-badges)](https://pypi.org/project/markdown-priority-badges/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/antoinekh/markdown-priority-badges/blob/master/LICENSE)
 
 A Python-Markdown extension that renders **priority badges** two ways: `!level` keywords inline anywhere, and a `!` / `!!` shorthand on task-list items. Works in Zensical, MkDocs, or plain Python-Markdown. The badge ships its own inline styles, so no external CSS is required.
 
@@ -21,9 +21,9 @@ This migration is !critical and blocks the release.
 ## !high Rotate the keys
 ```
 
-![Inline priority badges rendered in prose and a heading](docs/img/inline-badges.png)
+![Inline priority badges rendered in prose and a heading](https://raw.githubusercontent.com/antoinekh/markdown-priority-badges/master/docs/img/inline-badges.png)
 
-Only the configured level keywords match, so an ordinary `!`, `!important`, or `!highest` in text is never touched.
+Only the configured level keywords match, so an ordinary `!`, `!important`, or `!highest` in text is never touched. To write a level keyword literally, escape it (`\!high`) or put it in a code span (`` `!high` ``).
 
 ## Todo shorthand
 
@@ -39,7 +39,7 @@ Inside a checkbox item, `!` = high and `!!` = critical, a quick shorthand for `!
 - [ ] Weekly backup check
 ```
 
-<img alt="Todo list with priority badges" src="docs/img/todo-badges.png" width="560">
+<img alt="Todo list with priority badges" src="https://raw.githubusercontent.com/antoinekh/markdown-priority-badges/master/docs/img/todo-badges.png" width="560">
 
 The shorthand marker must come first (right after the checkbox) and be followed by a space, so `- [ ] !important note` is left untouched. Works with `-`, `*`, `+` bullets and both `[ ]` / `[x]` states.
 
@@ -49,12 +49,12 @@ Four built-in levels, plus any custom level you add via config (`blocker` below 
 
 | Level    | Origin         | Keyword     | Renders as                                            |
 | -------- | -------------- | ----------- | ----------------------------------------------------- |
-| Low      | built-in       | `!low`      | <img alt="low" src="docs/img/low.png" height="26">           |
-| Medium   | built-in       | `!medium`   | <img alt="medium" src="docs/img/medium.png" height="26">     |
-| High     | built-in       | `!high`     | <img alt="high" src="docs/img/high.png" height="26">         |
-| Critical | built-in       | `!critical` | <img alt="critical" src="docs/img/critical.png" height="26"> |
-| Blocker  | example custom | `!blocker`  | <img alt="blocker" src="docs/img/blocker.png" height="26">   |
-| Todo     | example custom | `!todo`     | <img alt="todo" src="docs/img/todo.png" height="26">         |
+| Low      | built-in       | `!low`      | <img alt="low" src="https://raw.githubusercontent.com/antoinekh/markdown-priority-badges/master/docs/img/low.png" height="26">           |
+| Medium   | built-in       | `!medium`   | <img alt="medium" src="https://raw.githubusercontent.com/antoinekh/markdown-priority-badges/master/docs/img/medium.png" height="26">     |
+| High     | built-in       | `!high`     | <img alt="high" src="https://raw.githubusercontent.com/antoinekh/markdown-priority-badges/master/docs/img/high.png" height="26">         |
+| Critical | built-in       | `!critical` | <img alt="critical" src="https://raw.githubusercontent.com/antoinekh/markdown-priority-badges/master/docs/img/critical.png" height="26"> |
+| Blocker  | example custom | `!blocker`  | <img alt="blocker" src="https://raw.githubusercontent.com/antoinekh/markdown-priority-badges/master/docs/img/blocker.png" height="26">   |
+| Todo     | example custom | `!todo`     | <img alt="todo" src="https://raw.githubusercontent.com/antoinekh/markdown-priority-badges/master/docs/img/todo.png" height="26">         |
 
 The default backgrounds are low green, medium amber, high orange, critical red. The `!` / `!!` task-list shorthand always maps to `high` / `critical`; lower levels are used via their inline keyword (`!low`, `!medium`). Badge text color (black or white) is chosen automatically for legibility against each background.
 
@@ -76,7 +76,7 @@ from markdown_priority_badges import PriorityBadgesExtension
 markdown.markdown(text, extensions=["pymdownx.tasklist", PriorityBadgesExtension(levels={"blocker": "#7b1fa2"})])
 ```
 
-Colors may be 3- or 6-digit hex (`#7b1fa2`, `#eee`) or a common CSS name (`red`, `yellow`, `rebeccapurple`); the badge text color auto-contrasts against them.
+Colors may be 3-, 4-, 6-, or 8-digit hex (`#7b1fa2`, `#eee`, `#eeeeeeff`) or a common CSS name (`red`, `yellow`, `rebeccapurple`); the badge text color auto-contrasts against them. Any alpha channel is ignored for the contrast calculation. A color must be a single CSS color value: one that could break out of the badge's `style` attribute (it contains `;`, `{`, `}`, `/*`, or `url(`) is rejected with a `ValueError` when the extension loads.
 
 ## Reusing the parser
 
@@ -93,7 +93,10 @@ priority_of("weekly backup")       # -> None  (no marker)
 priority_of("!blocker access", (*LEVELS, "blocker"))  # -> "blocker"
 ```
 
-`priority_of` returns the highest-ranked level found anywhere in the text, or `None`. `level_rank` gives a level's severity index.
+`priority_of` returns the highest-ranked level found anywhere in the text, or `None`. `level_rank` gives a level's severity index. Both accept any iterable of level names in ascending severity order, including the `levels` name → color map itself (its keys are read, in order).
+
+> [!NOTE]
+> `priority_of` is a plain-text scan, not a Markdown parse. Unlike the rendered badge, a keyword inside a code span or escaped as `\!high` still counts.
 
 ## Install & enable
 

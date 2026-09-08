@@ -12,15 +12,24 @@ classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Documentation",
+    "Topic :: Text Processing :: Markup :: Markdown",
+    "Typing :: Typed",
 ]
 
 [project.urls]
 Homepage = "https://github.com/antoinekh/markdown-priority-badges"
+Repository = "https://github.com/antoinekh/markdown-priority-badges"
+Issues = "https://github.com/antoinekh/markdown-priority-badges/issues"
 Changelog = "https://github.com/antoinekh/markdown-priority-badges/blob/master/CHANGELOG.md"
 
 [dependency-groups]
-dev = ["pytest>=8.0", "pymdown-extensions>=10.0", "ruff>=0.8"]
+dev = ["pytest>=8.0", "pymdown-extensions>=10.0", "ruff>=0.8", "mypy>=1.11", "types-Markdown"]
 
 [build-system]
 requires = ["hatchling"]
@@ -34,3 +43,12 @@ testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+# The package ships py.typed, so the shipped code is checked strictly.
+files = ["src"]
+python_version = "3.10"
+strict = true
