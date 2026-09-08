@@ -46,3 +46,18 @@ def test_custom_level_recognized_only_when_listed():
 
 def test_shorthand_ignored_when_high_not_in_levels():
     assert priority_of("! do it", ("low", "medium")) is None
+
+
+def test_levels_accepts_a_name_to_color_mapping():
+    # The extension's own `levels` option is a dict; reusing it must work.
+    levels = {"low": "#2e7d32", "high": "#ef6c00", "blocker": "#7b1fa2"}
+    assert priority_of("!blocker vendor access", levels) == "blocker"
+    assert priority_of("!low then !high", levels) == "high"
+    assert level_rank("blocker", levels) == 2
+    assert level_rank("nope", levels) == -1
+
+
+def test_parsing_is_a_raw_scan_not_a_markdown_parse():
+    # Documented limit: `priority_of` sees text the renderer would leave alone.
+    assert priority_of("use `!critical` verbatim") == "critical"
+    assert priority_of(r"escaped \!high") == "high"

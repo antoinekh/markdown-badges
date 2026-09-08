@@ -14,15 +14,34 @@ Levels are a name->color map, configurable via the ``levels`` option (merged
 over the built-ins). The badge carries its own inline styles, so the extension
 is self-contained: no external stylesheet is needed. Badge text color (black
 or white) is chosen automatically for legibility against each background.
+
+A keyword is left literal when it is escaped (``\\!high``) or written inside a
+code span, because the inline processor is registered below Python-Markdown's
+own ``escape`` and ``backtick`` patterns.
 """
 
 import re
 import xml.etree.ElementTree as etree
-from typing import Any, Sequence
+from collections.abc import Iterable, Mapping, Sequence
+from typing import Any
 
-from markdown import Extension
+from markdown import Extension, Markdown
 from markdown.inlinepatterns import InlineProcessor
 from markdown.treeprocessors import Treeprocessor
+
+__all__ = [
+    "DEFAULT_LEVELS",
+    "INLINE_PRIORITY",
+    "LEVELS",
+    "MARKER_RE",
+    "TREE_PRIORITY",
+    "PriorityBadgesExtension",
+    "PriorityInlineProcessor",
+    "TasklistShorthandTreeprocessor",
+    "level_rank",
+    "makeExtension",
+    "priority_of",
+]
 
 # Built-in level -> badge background color. Config `levels` merges over this.
 DEFAULT_LEVELS = {
@@ -44,6 +63,15 @@ _LEADING_BANGS_RE = re.compile(r"^(!+)\s")
 # whitespace. The checkbox part mirrors pymdownx.tasklist's own pattern so the
 # same items match. One `!` maps to "high", two or more to "critical".
 MARKER_RE = re.compile(r"^(?P<checkbox> *\[(?:x|X| )\] +)(?P<bangs>!+)\s+(?P<rest>.*)", re.DOTALL)
+
+# Treeprocessor priority: above pymdownx.tasklist (25), so the shorthand is
+# read from pristine `[ ] !! text` before tasklist turns it into a checkbox.
+TREE_PRIORITY = 26
+
+# Inline-pattern priority: below Python-Markdown's `escape` (180), so a
+# backslash-escaped `\!high` stays literal, and below `backtick` (190), so a
+# keyword inside a code span survives verbatim.
+INLINE_PRIORITY = 175
 
 # Shared pill geometry; per-badge background and (auto) text color are appended.
 _BADGE_STYLE = (
@@ -84,23 +112,26 @@ _NAMED_COLORS = {
 
 def _to_hex6(color: str) -> str | None:
     """Normalize a CSS color to six hex digits, or None if it cannot be
-    resolved. Accepts 3-/6-digit hex and the common named colors above."""
+    resolved. Accepts 3-/4-/6-/8-digit hex (any alpha channel is dropped) and
+    the common named colors above."""
     c = color.strip().lower()
     c = _NAMED_COLORS.get(c, c)
     if not c.startswith("#"):
         return None
     h = c[1:]
-    if len(h) == 3:
+    if not h or not all(ch in "0123456789abcdef" for ch in h):
+        return None
+    if len(h) in (3, 4):
         h = "".join(ch * 2 for ch in h)
-    if len(h) == 6 and all(ch in "0123456789abcdef" for ch in h):
-        return h
+    if len(h) in (6, 8):
+        return h[:6]
     return None
 
 
 def _text_color(bg: str) -> str:
     """Black or white, whichever has the higher WCAG contrast against `bg`.
-    `bg` may be 3-/6-digit hex or a common named color; anything else falls
-    back to white."""
+    `bg` may be 3-/4-/6-/8-digit hex or a common named color; anything else
+    falls back to white."""
     hex6 = _to_hex6(bg)
     if hex6 is None:
         return "#fff"
@@ -120,26 +151,36 @@ def _shorthand_level(bangs: str) -> str:
     return "high" if len(bangs) == 1 else "critical"
 
 
-def level_rank(level: str, levels: Sequence[str] = LEVELS) -> int:
-    """Severity rank of `level` within `levels` (higher = more severe), or -1."""
-    return levels.index(level) if level in levels else -1
+def level_rank(level: str, levels: Iterable[str] = LEVELS) -> int:
+    """Severity rank of `level` within `levels` (higher = more severe), or -1.
+
+    `levels` is any iterable of level names in ascending severity order. A
+    name->color mapping (such as the extension's `levels` option) works too:
+    its keys are read, in insertion order."""
+    names = tuple(levels)
+    return names.index(level) if level in names else -1
 
 
-def priority_of(text: str, levels: Sequence[str] = LEVELS) -> str | None:
+def priority_of(text: str, levels: Iterable[str] = LEVELS) -> str | None:
     """Highest-ranked priority level found in `text`, or None.
 
     Considers a leading `!` / `!!` shorthand (high / critical) and every inline
     `!<name>` keyword for `name` in `levels`. Returns the level with the greatest
-    `level_rank`. `text` is item content, with any checkbox prefix stripped."""
+    `level_rank`. `levels` accepts the same values as `level_rank`.
+
+    `text` is raw item content, with any checkbox prefix stripped. This is a
+    plain-text scan, not a Markdown parse: unlike the rendered badge, a keyword
+    inside a code span or escaped as `\\!high` still counts."""
+    names = tuple(levels)
     found: list[str] = []
     if (m := _LEADING_BANGS_RE.match(text)) is not None:
         shorthand = _shorthand_level(m.group(1))
-        if shorthand in levels:
+        if shorthand in names:
             found.append(shorthand)
-    found += re.findall(_inline_re(list(levels)), text)
+    found += re.findall(_inline_re(names), text)
     if not found:
         return None
-    return max(found, key=lambda name: level_rank(name, levels))
+    return max(found, key=lambda name: level_rank(name, names))
 
 
 def _badge_element(level: str, color: str) -> etree.Element:
@@ -160,11 +201,11 @@ def _badge_html(level: str, color: str) -> str:
 class TasklistShorthandTreeprocessor(Treeprocessor):
     """Rewrite task-list items flagged with a leading `!` run into a badge."""
 
-    def __init__(self, md: Any, levels: dict[str, str]) -> None:
+    def __init__(self, md: Markdown, levels: dict[str, str]) -> None:
         super().__init__(md)
         self.levels = levels
 
-    def _rewrite(self, holder: Any) -> bool:
+    def _rewrite(self, holder: etree.Element) -> bool:
         m = MARKER_RE.match(holder.text or "")
         if m is None:
             return False
@@ -173,7 +214,7 @@ class TasklistShorthandTreeprocessor(Treeprocessor):
         holder.text = m.group("checkbox") + badge + m.group("rest")
         return True
 
-    def run(self, root: Any) -> None:
+    def run(self, root: etree.Element) -> None:
         for li in root.iter("li"):
             if self._rewrite(li):
                 continue
@@ -187,16 +228,20 @@ class TasklistShorthandTreeprocessor(Treeprocessor):
 class PriorityInlineProcessor(InlineProcessor):
     """Render an inline `!<level>` keyword as a badge span."""
 
-    def __init__(self, pattern: str, md: Any, levels: dict[str, str]) -> None:
+    def __init__(self, pattern: str, md: Markdown, levels: dict[str, str]) -> None:
         super().__init__(pattern, md)
         self.levels = levels
 
-    def handleMatch(self, m: Any, data: Any) -> tuple[etree.Element, int, int]:
+    # The stub types `handleMatch` on the legacy one-argument `Pattern` base,
+    # so the correct two-argument InlineProcessor signature needs the ignore.
+    def handleMatch(  # type: ignore[override]
+        self, m: re.Match[str], data: str
+    ) -> tuple[etree.Element, int, int]:
         level = m.group(1)
         return _badge_element(level, self.levels[level]), m.start(0), m.end(0)
 
 
-def _inline_re(names: list[str]) -> str:
+def _inline_re(names: Sequence[str]) -> str:
     """`!<name>` inline-keyword regex for the configured level names: not
     preceded by a word char or another `!`, ending on a word boundary. Longer
     names are tried first so no name shadows a longer one."""
@@ -204,22 +249,48 @@ def _inline_re(names: list[str]) -> str:
     return rf"(?<![\w!])!({alts})\b"
 
 
+# Constructs that would let a `levels` color escape its CSS declaration or
+# pull in a remote resource: `;` ends the declaration, `{`/`}` and `/*` break
+# the surrounding syntax, and `url(` fetches from the network.
+_UNSAFE_COLOR_RE = re.compile(r"[;{}]|/\*|\burl\s*\(", re.IGNORECASE)
+
+
+def _validate_levels(levels: Mapping[str, Any]) -> None:
+    """Raise ValueError if any level color could break out of the badge's style
+    attribute. A color must be a single CSS color value. Values come from site
+    config (TOML / YAML), so their type is checked as well."""
+    for name, color in levels.items():
+        if not isinstance(color, str):
+            raise ValueError(f"priority-badges: level {name!r} has a non-string color {color!r}")
+        if not color.strip():
+            raise ValueError(f"priority-badges: level {name!r} has an empty color")
+        if _UNSAFE_COLOR_RE.search(color):
+            raise ValueError(
+                f"priority-badges: level {name!r} has an unsafe color {color!r}; "
+                "a color must be a single CSS color value"
+            )
+
+
 class PriorityBadgesExtension(Extension):
+    """Registers the task-list shorthand and the inline `!<level>` keyword."""
+
     def __init__(self, **kwargs: Any) -> None:
         self.config = {
             "levels": [{}, "Level->color map, merged over the built-in defaults"],
         }
         super().__init__(**kwargs)
 
-    def extendMarkdown(self, md: Any) -> None:
-        levels = {**DEFAULT_LEVELS, **(self.getConfig("levels", {}) or {})}
+    def extendMarkdown(self, md: Markdown) -> None:
+        configured: Mapping[str, Any] = self.getConfig("levels", {}) or {}
+        _validate_levels(configured)
+        levels: dict[str, str] = {**DEFAULT_LEVELS, **configured}
         md.treeprocessors.register(
-            TasklistShorthandTreeprocessor(md, levels), "priority-badge-tasklist", 26
+            TasklistShorthandTreeprocessor(md, levels), "priority-badge-tasklist", TREE_PRIORITY
         )
         md.inlinePatterns.register(
-            PriorityInlineProcessor(_inline_re(list(levels)), md, levels),
+            PriorityInlineProcessor(_inline_re(tuple(levels)), md, levels),
             "priority-badge-inline",
-            185,
+            INLINE_PRIORITY,
         )
 
 

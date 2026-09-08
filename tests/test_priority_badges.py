@@ -1,6 +1,7 @@
 """Rendering tests for the priority-badge Markdown extension."""
 
 import markdown
+import pytest
 
 from markdown_priority_badges import PriorityBadgesExtension
 
@@ -156,3 +157,76 @@ def test_unconfigured_keyword_is_not_matched():
     html = render("!blocker here")
     assert "task-prio" not in html
     assert "!blocker here" in html
+
+
+def test_escaped_keyword_stays_literal():
+    # The inline processor runs below Python-Markdown's `escape` pattern, so a
+    # backslash-escaped keyword renders as plain text with no stray backslash.
+    html = render(r"Literal \!high and real !high")
+    assert html.count("task-prio--high") == 1
+    assert "Literal !high and real" in html
+    assert "\\" not in html
+
+
+def test_nested_task_list_item():
+    html = render("- [ ] parent\n    - [ ] !! child")
+    assert "task-prio--critical" in html
+    assert "child" in html
+
+
+def test_star_and_plus_bullets():
+    html = render("* [ ] !! star\n")
+    assert "task-prio--critical" in html
+    html = render("+ [ ] ! plus\n")
+    assert "task-prio--high" in html
+
+
+def test_uppercase_checkbox_is_matched():
+    html = render("- [X] !! Rotated keys")
+    assert "task-prio--critical" in html
+    assert "checked" in html
+
+
+def test_inline_keyword_works_inside_a_task_item():
+    html = render("- [ ] !blocker Waiting on vendor", levels={"blocker": "#7b1fa2"})
+    assert "task-prio--blocker" in html
+    assert "Waiting on vendor" in html
+
+
+# --- Color handling --------------------------------------------------------
+
+
+def test_eight_digit_hex_drops_the_alpha_channel():
+    # #eeeeee is light, so the alpha suffix must not push the text to white.
+    html = render("!low", levels={"low": "#eeeeeeff"})
+    assert "background-color:#eeeeeeff;color:#000" in html
+
+
+def test_four_digit_hex_drops_the_alpha_channel():
+    html = render("!low", levels={"low": "#eeef"})
+    assert "background-color:#eeef;color:#000" in html
+
+
+@pytest.mark.parametrize(
+    "color",
+    [
+        "red;background-image:url(http://evil/x.png)",
+        "url(http://evil/x.png)",
+        "red/*x*/",
+        "red}",
+    ],
+)
+def test_unsafe_color_is_rejected(color):
+    # A color must not be able to escape the badge's style attribute.
+    with pytest.raises(ValueError, match="unsafe color"):
+        render("!low", levels={"low": color})
+
+
+def test_empty_color_is_rejected():
+    with pytest.raises(ValueError, match="empty color"):
+        render("!low", levels={"low": "   "})
+
+
+def test_non_string_color_is_rejected():
+    with pytest.raises(ValueError, match="non-string color"):
+        render("!low", levels={"low": 42})
