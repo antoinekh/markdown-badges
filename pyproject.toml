@@ -1,6 +1,6 @@
 [project]
 name = "markdown-badges"
-version = "1.0.0"
+version = "1.0.1"
 description = "Python-Markdown extension rendering inline !name badges, with a catalogue of priority, status and branding badges"
 readme = "README.md"
 license = "MIT"

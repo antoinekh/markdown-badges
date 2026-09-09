@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.1 - 2026-09-09
+
+### Fixed
+
+- The project URLs and README links point at the renamed `markdown-badges` repository. The 1.0.0 artifacts were built from a tag that predated the rename, so its PyPI metadata still names the old repository; those links resolve only through GitHub's redirect.
+
 ## 1.0.0 - 2026-09-08
 
 Renamed from `markdown-priority-badges`. Breaking release: see [MIGRATING.md](MIGRATING.md).
