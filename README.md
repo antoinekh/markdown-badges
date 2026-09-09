@@ -106,6 +106,16 @@ value = f"#0052cc;background-image:url('{uri}');background-repeat:no-repeat;back
 
 Put the resulting `value` under `badges.branding` (or any type) with the name you want the keyword to use, for example `badges={"branding": {"jira": value}}`. For the recipe used to build the shipped branding badges, including the SVG-encoding helper, see `_icon_value` in `src/markdown_badges/catalogue.py`.
 
+### Or use a shields.io image
+
+You do not have to add a badge at all. Markdown accepts raw HTML, so a [shields.io](https://shields.io) image works anywhere in the page, for any brand:
+
+```markdown
+<img src="https://img.shields.io/badge/Terraform-7B42BC?style=flat&logo=terraform&logoColor=white" alt="Terraform"/>
+```
+
+Mix the two freely. A shields.io image suits a README banner row: many logos at once, no install, and any brand in the simple-icons set. A badge keyword suits the body of a document: `!docker` is a word you type in prose, a table cell or a list item, it makes no network request, it renders offline and behind a proxy, and it scales with the surrounding text instead of sitting at a fixed pixel height.
+
 ## Task-list shorthand
 
 Not built in by default. The `shorthand` option maps any task-list marker to any badge name, so you can pick your own markers, or restore the old `!` / `!!` behaviour:

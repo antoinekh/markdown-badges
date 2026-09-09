@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- README: a note that a shields.io `<img>` is a valid alternative for a brand mark, because Markdown accepts raw HTML, and when each option fits.
+
 ## 1.0.2 - 2026-09-09
 
 ### Fixed
