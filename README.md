@@ -1,9 +1,9 @@
 # markdown-badges
 
-[![CI](https://github.com/antoinekh/markdown-priority-badges/actions/workflows/ci.yml/badge.svg)](https://github.com/antoinekh/markdown-priority-badges/actions/workflows/ci.yml)
+[![CI](https://github.com/antoinekh/markdown-badges/actions/workflows/ci.yml/badge.svg)](https://github.com/antoinekh/markdown-badges/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/markdown-badges)](https://pypi.org/project/markdown-badges/)
 [![Python versions](https://img.shields.io/pypi/pyversions/markdown-badges)](https://pypi.org/project/markdown-badges/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/antoinekh/markdown-priority-badges/blob/master/LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/antoinekh/markdown-badges/blob/master/LICENSE)
 
 A Python-Markdown extension that renders small inline **badges** from a `!name` keyword: priority, status, or brand. Works in Zensical, MkDocs, or plain Python-Markdown. The badge ships its own inline styles, so no external CSS is required.
 
@@ -21,7 +21,7 @@ This migration is !critical and blocks the release.
 ## !high Rotate the keys
 ```
 
-![Inline badges rendered in prose and a heading](https://raw.githubusercontent.com/antoinekh/markdown-priority-badges/master/docs/img/inline-badges.png)
+![Inline badges rendered in prose and a heading](https://raw.githubusercontent.com/antoinekh/markdown-badges/master/docs/img/inline-badges.png)
 
 Only a name in scope matches, so an ordinary `!`, `!important`, or `!highest` in text is never touched. To write a name literally, escape it (`\!high`) or put it in a code span (`` `!high` ``).
 
@@ -39,9 +39,9 @@ Every badge belongs to one of three types.
 
 Every badge above ships with the package and is active out of the box, no config required.
 
-![Every badge in the catalogue, the task-list shorthand, and badges in a table and a heading](https://raw.githubusercontent.com/antoinekh/markdown-priority-badges/master/docs/img/showcase.png)
+![Every badge in the catalogue, the task-list shorthand, and badges in a table and a heading](https://raw.githubusercontent.com/antoinekh/markdown-badges/master/docs/img/showcase.png)
 
-Full list with keyword, value, and resolved text colour: **[docs/badges.md](https://github.com/antoinekh/markdown-priority-badges/blob/master/docs/badges.md)**.
+Full list with keyword, value, and resolved text colour: **[docs/badges.md](https://github.com/antoinekh/markdown-badges/blob/master/docs/badges.md)**.
 
 ## Narrowing the catalogue
 
@@ -126,7 +126,7 @@ Not built in by default. The `shorthand` option maps any task-list marker to any
 - [ ] Weekly backup check
 ```
 
-<img alt="Todo list with badges" src="https://raw.githubusercontent.com/antoinekh/markdown-priority-badges/master/docs/img/todo-badges.png" width="560">
+<img alt="Todo list with badges" src="https://raw.githubusercontent.com/antoinekh/markdown-badges/master/docs/img/todo-badges.png" width="560">
 
 The marker must come right after the checkbox and be followed by a space, so `- [ ] !important note` is left untouched. Works with `-`, `*`, `+` bullets and both `[ ]` / `[x]` states. Requires `pymdownx.tasklist` to be enabled alongside this extension.
 
@@ -173,4 +173,4 @@ Add `pymdownx.tasklist` to `extensions` too if you enable the `shorthand` option
 
 ## Migrating from 0.2.0
 
-The package was renamed from `markdown-priority-badges` to `markdown-badges`, and the config and API changed along with it: see **[MIGRATING.md](https://github.com/antoinekh/markdown-priority-badges/blob/master/MIGRATING.md)**.
+The package was renamed from `markdown-badges` to `markdown-badges`, and the config and API changed along with it: see **[MIGRATING.md](https://github.com/antoinekh/markdown-badges/blob/master/MIGRATING.md)**.

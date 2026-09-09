@@ -26,11 +26,11 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/antoinekh/markdown-priority-badges"
-Repository = "https://github.com/antoinekh/markdown-priority-badges"
-Issues = "https://github.com/antoinekh/markdown-priority-badges/issues"
-Documentation = "https://github.com/antoinekh/markdown-priority-badges/blob/master/docs/badges.md"
-Changelog = "https://github.com/antoinekh/markdown-priority-badges/blob/master/CHANGELOG.md"
+Homepage = "https://github.com/antoinekh/markdown-badges"
+Repository = "https://github.com/antoinekh/markdown-badges"
+Issues = "https://github.com/antoinekh/markdown-badges/issues"
+Documentation = "https://github.com/antoinekh/markdown-badges/blob/master/docs/badges.md"
+Changelog = "https://github.com/antoinekh/markdown-badges/blob/master/CHANGELOG.md"
 
 [dependency-groups]
 dev = ["pytest>=8.0", "pymdown-extensions>=10.0", "ruff>=0.8", "mypy>=1.11", "types-Markdown"]
