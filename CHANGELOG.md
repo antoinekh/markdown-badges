@@ -2,49 +2,35 @@
 
 ## 1.0.0 - 2026-09-08
 
+Renamed from `markdown-priority-badges`. Breaking release: see [MIGRATING.md](MIGRATING.md).
+
 ### Added
 
-- The badge catalogue ships in the package and is active with no config. `catalogue` narrows it; `[]` disables it.
+- A 20-badge catalogue ships in the package and is active with no config: 6 priority, 9 status, 5 branding. `catalogue` narrows which types load, `[]` disables it.
+- `shorthand` maps any task-list marker to any badge, so anyone can invent their own markers.
+- Extended badge values: anything after a `;` in a value becomes a further CSS declaration, so a badge can carry an icon, a gradient or a shadow with no site CSS.
 - `badges_in(text)` returns every badge on a line, of any type, in document order.
-- `shorthand` maps any task-list marker to any badge, so `!` / `!!` is config a user opts into and anyone can invent their own markers.
-- `BadgeType`, `Badge`, `CATALOGUE`, `catalogue_for`, and `resolve_badges` are public. The styling helpers (`BADGE_STYLE`, `badge_element`, `badge_html`, `text_color`, `to_hex6`) stay private to `markdown_badges.styling`; they are not part of the 1.0 API.
-- **Extended badge values.** A badge value under `badges` becomes the badge's `background-color`, and anything after a `;` becomes a further declaration on that badge. A badge can carry a background image, a gradient, or a shadow straight from config, with no site CSS. The value is not parsed or filtered, exactly like an `extra_css` rule.
-- Badge catalogue at `docs/badges.md`: every catalogue badge listed with its keyword, value, and resolved text colour, grouped into priority, status, and branding. Generated from `CATALOGUE` in `src/markdown_badges/catalogue.py` by `scripts/gen_badges.py`, so adding a badge is one entry plus a re-run.
-- Logo badges for GitLab, GitHub, Claude, and Docker, each with its mark inlined as a `data:` URI so a page makes no network request for it.
-- `__all__`, plus the `TREE_PRIORITY` and `INLINE_PRIORITY` constants that document why each processor is registered where it is.
-- Colors accept 4- and 8-digit hex (`#eeef`, `#eeeeeeff`); the alpha channel is dropped before the contrast calculation.
-- A badge value is rejected with a `ValueError` when the extension loads if it is not a string, or is empty. Those cannot produce CSS at all, so they are config mistakes rather than intent.
-- `mypy --strict` over `src`, and `ruff format --check`, both run in CI.
-- Tests for the escape hatch, nested task lists, `*` / `+` bullets, an uppercase `[X]` checkbox, an inline keyword inside a task item, alpha hex colors, extended badge values, and value validation.
-- A `docs/img/showcase.png` screenshot in the README Catalogue section, showing every badge type, the task-list shorthand, and badges in a table and a heading, captured from a real site build.
+- Public API: `Badge`, `BadgeType`, `CATALOGUE`, `catalogue_for`, `resolve_badges`, `badges_in`, `priority_of`, `rank_of`.
 
 ### Changed
 
-- Renamed to `markdown-badges`. Import path is `markdown_badges`, config key is `markdown_badges`, CSS class prefix is `badge` instead of `task-prio`.
+- Import path and config key are now `markdown_badges`; the CSS class prefix is `badge` instead of `task-prio`.
 - Badges are declared under `badges`, keyed by type (`priority`, `status`, `branding`), replacing the flat `levels` map.
 - `priority_of` and `rank_of` consider only `priority` badges, so a status or branding badge can no longer be reported as a severity.
 - The scanning API takes a `Mapping[str, Badge]` rather than a sequence of level names.
-- The text-contrast calculation reads a badge value up to its first `;`, so a value carrying extra declarations now contrasts against its real background instead of silently falling back to white text.
-- The ruff lint rule set now selects `E`, `F`, `I`, `UP`, and `B`.
-- Both workflows use the same action versions (`actions/checkout@v6`, `astral-sh/setup-uv@v8.2.0`).
-- Added the per-version Python, Markdown topic, and `Typing :: Typed` classifiers, plus the `Repository` and `Issues` project URLs.
-- Classifier bumped to `Development Status :: 5 - Production/Stable` for the 1.0 release.
-- The sdist is built from an explicit allowlist, so only `src`, `tests`, the docs the README links, and the project metadata ship inside the published source tarball.
 
 ### Removed
 
-- The `levels` option. A leftover `levels` key raises a `ValueError` pointing at `MIGRATING.md`.
-- The built-in `!` / `!!` task-list shorthand. Restore it with three lines of `shorthand` config.
+- The `levels` option. A leftover `levels` key raises a `ValueError` pointing at the migration guide.
+- The built-in `!` / `!!` task-list shorthand. Three lines of `shorthand` config restore it.
 - `LEVELS`, `DEFAULT_LEVELS`, `level_rank`, `MARKER_RE`, `PriorityBadgesExtension`, `PriorityInlineProcessor`, `TasklistShorthandTreeprocessor`.
-- The orphaned 0.2.0 `docs/img/{blocker,critical,high,low,medium,todo}.png` images; nothing referenced them.
 
 ### Fixed
 
-- A backslash-escaped keyword (`\!high`) now renders as literal text instead of a badge with a stray backslash. The inline processor moved from priority 185 to 175, below Python-Markdown's own `escape` pattern (180).
-- README image and `LICENSE` links are absolute, so they render on the PyPI project page instead of breaking.
-- A `badges` entry whose type value is not a mapping (for example a list) now raises a `ValueError` naming the offending type key, instead of an `AttributeError` from calling `.items()` on it.
-- The two badge-value validation errors now say what a valid value looks like, matching the `levels` and `shorthand` error messages.
-- The PyPI `description` described the removed priority-only `!level` keywords and built-in `! / !!` shorthand; it now describes the 1.0 `!name` badge model and catalogue.
+- A backslash-escaped keyword (`\!high`) renders as literal text instead of a badge with a stray backslash.
+- The text-contrast calculation reads a badge value up to its first `;`, so a value carrying extra declarations contrasts against its real background instead of falling back to white text.
+- Every invalid config raises a `ValueError` naming the offending key and the fix, instead of failing silently or with an `AttributeError`.
+- README links are absolute, so they resolve on the PyPI project page.
 
 ## 0.2.0 - 2026-07-01
 
