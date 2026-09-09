@@ -41,7 +41,7 @@ Every badge above ships with the package and is active out of the box, no config
 
 ![Every badge in the catalogue, the task-list shorthand, and badges in a table and a heading](https://raw.githubusercontent.com/antoinekh/markdown-priority-badges/master/docs/img/showcase.png)
 
-Full list with keyword, value, and resolved text colour: **[docs/badges.md](docs/badges.md)**.
+Full list with keyword, value, and resolved text colour: **[docs/badges.md](https://github.com/antoinekh/markdown-priority-badges/blob/master/docs/badges.md)**.
 
 ## Narrowing the catalogue
 
@@ -173,4 +173,4 @@ Add `pymdownx.tasklist` to `extensions` too if you enable the `shorthand` option
 
 ## Migrating from 0.2.0
 
-The package was renamed from `markdown-priority-badges` to `markdown-badges`, and the config and API changed along with it: see **[MIGRATING.md](MIGRATING.md)**.
+The package was renamed from `markdown-priority-badges` to `markdown-badges`, and the config and API changed along with it: see **[MIGRATING.md](https://github.com/antoinekh/markdown-priority-badges/blob/master/MIGRATING.md)**.

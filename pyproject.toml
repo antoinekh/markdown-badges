@@ -7,17 +7,20 @@ license = "MIT"
 authors = [{ name = "Antoine Keranflec'h" }]
 requires-python = ">=3.10"
 dependencies = ["markdown>=3.5"]
-keywords = ["markdown", "mkdocs", "zensical", "badge", "priority", "tasklist", "documentation"]
+keywords = ["markdown", "mkdocs", "zensical", "badge", "badges", "priority", "status", "branding", "catalogue", "tasklist", "documentation"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
+    "Framework :: MkDocs",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
     "Topic :: Documentation",
+    "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Text Processing :: Markup :: Markdown",
     "Typing :: Typed",
 ]
@@ -26,6 +29,7 @@ classifiers = [
 Homepage = "https://github.com/antoinekh/markdown-priority-badges"
 Repository = "https://github.com/antoinekh/markdown-priority-badges"
 Issues = "https://github.com/antoinekh/markdown-priority-badges/issues"
+Documentation = "https://github.com/antoinekh/markdown-priority-badges/blob/master/docs/badges.md"
 Changelog = "https://github.com/antoinekh/markdown-priority-badges/blob/master/CHANGELOG.md"
 
 [dependency-groups]
@@ -39,7 +43,17 @@ build-backend = "hatchling.build"
 packages = ["src/markdown_badges"]
 
 [tool.hatch.build.targets.sdist]
-exclude = ["docs/superpowers"]
+include = [
+    "src/**",
+    "tests/**",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "MIGRATING.md",
+    "pyproject.toml",
+    "docs/img/*.png",
+    "docs/badges.md",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
