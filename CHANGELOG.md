@@ -29,7 +29,7 @@
 - Both workflows use the same action versions (`actions/checkout@v6`, `astral-sh/setup-uv@v8.2.0`).
 - Added the per-version Python, Markdown topic, and `Typing :: Typed` classifiers, plus the `Repository` and `Issues` project URLs.
 - Classifier bumped to `Development Status :: 5 - Production/Stable` for the 1.0 release.
-- The sdist excludes `docs/superpowers`, the internal planning docs, so they no longer ship inside the published source tarball.
+- The sdist is built from an explicit allowlist, so only `src`, `tests`, the docs the README links, and the project metadata ship inside the published source tarball.
 
 ### Removed
 
