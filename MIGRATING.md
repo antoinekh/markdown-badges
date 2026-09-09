@@ -2,7 +2,7 @@
 
 ## Install
 
-Replace the dependency. The old project stays on PyPI at 0.2.0 and receives no further releases.
+Replace the dependency. The `markdown-priority-badges` name is still reserved on PyPI, but it has no installable files left: its simple index returns 404, so `pip install markdown-priority-badges` now fails. Pin `markdown-badges` instead.
 
 ```bash
 uv remove markdown-priority-badges && uv add markdown-badges

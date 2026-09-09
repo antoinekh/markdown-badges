@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.2 - 2026-09-09
+
+### Fixed
+
+- `MIGRATING.md` claimed the old `markdown-priority-badges` project stays installable on PyPI at 0.2.0. It does not: the name is reserved but its simple index returns 404, so installing it fails.
+
 ## 1.0.1 - 2026-09-09
 
 ### Fixed
