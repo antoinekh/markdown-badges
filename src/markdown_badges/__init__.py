@@ -33,24 +33,18 @@ from markdown_badges.parsing import (
     priority_of,
     rank_of,
 )
-from markdown_badges.styling import BADGE_STYLE, badge_element, badge_html, text_color, to_hex6
 
 __all__ = [
-    "BADGE_STYLE",
     "CATALOGUE",
     "Badge",
     "BadgeType",
     "MarkdownBadgesExtension",
-    "badge_element",
-    "badge_html",
     "badges_in",
     "catalogue_for",
     "makeExtension",
     "priority_of",
     "rank_of",
     "resolve_badges",
-    "text_color",
-    "to_hex6",
 ]
 
 _TYPE_NAMES = ", ".join(t.value for t in BadgeType)

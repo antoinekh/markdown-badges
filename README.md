@@ -39,7 +39,7 @@ Every badge belongs to one of three types.
 
 Every badge above ships with the package and is active out of the box, no config required.
 
-![Every badge in the catalogue, rendered](https://raw.githubusercontent.com/antoinekh/markdown-priority-badges/master/docs/img/catalogue.png)
+![Every badge in the catalogue, the task-list shorthand, and badges in a table and a heading](https://raw.githubusercontent.com/antoinekh/markdown-priority-badges/master/docs/img/showcase.png)
 
 Full list with keyword, value, and resolved text colour: **[docs/badges.md](docs/badges.md)**.
 

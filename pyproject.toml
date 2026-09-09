@@ -1,7 +1,7 @@
 [project]
 name = "markdown-badges"
 version = "1.0.0"
-description = "Python-Markdown extension: priority badges from !level inline keywords and ! / !! task-list shorthand"
+description = "Python-Markdown extension rendering inline !name badges, with a catalogue of priority, status and branding badges"
 readme = "README.md"
 license = "MIT"
 authors = [{ name = "Antoine Keranflec'h" }]
@@ -9,7 +9,7 @@ requires-python = ">=3.10"
 dependencies = ["markdown>=3.5"]
 keywords = ["markdown", "mkdocs", "zensical", "badge", "priority", "tasklist", "documentation"]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
@@ -37,6 +37,9 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/markdown_badges"]
+
+[tool.hatch.build.targets.sdist]
+exclude = ["docs/superpowers"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

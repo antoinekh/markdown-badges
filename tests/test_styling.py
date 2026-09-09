@@ -52,5 +52,5 @@ def test_badge_element_passes_extended_css_through():
 
 def test_badge_html_ends_with_a_space():
     html = badge_html(Badge("done", "#37474f", BadgeType.STATUS))
-    assert html.endswith("> ") or html.endswith("</span> ")
+    assert html.endswith("</span> ")
     assert etree.fromstring(html.strip()).tag == "span"
