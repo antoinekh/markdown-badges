@@ -1,36 +1,71 @@
 [project]
-name = "markdown-priority-badges"
-version = "0.2.0"
-description = "Python-Markdown extension: priority badges from !level inline keywords and ! / !! task-list shorthand"
+name = "markdown-badges"
+version = "1.0.0"
+description = "Python-Markdown extension rendering inline !name badges, with a catalogue of priority, status and branding badges"
 readme = "README.md"
 license = "MIT"
 authors = [{ name = "Antoine Keranflec'h" }]
 requires-python = ">=3.10"
 dependencies = ["markdown>=3.5"]
-keywords = ["markdown", "mkdocs", "zensical", "badge", "priority", "tasklist", "documentation"]
+keywords = ["markdown", "mkdocs", "zensical", "badge", "badges", "priority", "status", "branding", "catalogue", "tasklist", "documentation"]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
+    "Framework :: MkDocs",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Documentation",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Text Processing :: Markup :: Markdown",
+    "Typing :: Typed",
 ]
 
 [project.urls]
 Homepage = "https://github.com/antoinekh/markdown-priority-badges"
+Repository = "https://github.com/antoinekh/markdown-priority-badges"
+Issues = "https://github.com/antoinekh/markdown-priority-badges/issues"
+Documentation = "https://github.com/antoinekh/markdown-priority-badges/blob/master/docs/badges.md"
 Changelog = "https://github.com/antoinekh/markdown-priority-badges/blob/master/CHANGELOG.md"
 
 [dependency-groups]
-dev = ["pytest>=8.0", "pymdown-extensions>=10.0", "ruff>=0.8"]
+dev = ["pytest>=8.0", "pymdown-extensions>=10.0", "ruff>=0.8", "mypy>=1.11", "types-Markdown"]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/markdown_priority_badges"]
+packages = ["src/markdown_badges"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/**",
+    "tests/**",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "MIGRATING.md",
+    "pyproject.toml",
+    "docs/img/*.png",
+    "docs/badges.md",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+# The package ships py.typed, so the shipped code is checked strictly.
+files = ["src"]
+python_version = "3.10"
+strict = true
